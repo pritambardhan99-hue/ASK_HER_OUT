@@ -17,9 +17,23 @@
   h1{font-size: clamp(20px,6vw,36px); margin:0 0 6px; color:var(--muted)}
   p.lead{margin:0;color:#7d5a7a; font-size:clamp(13px,3.4vw,16px)}
   .buttons{display:flex; gap:14px; align-items:center; justify-content:center; margin-top:14px; flex-wrap:wrap}
-  .btn{position:relative;padding:16px 26px;border-radius:14px;font-weight:800;font-size:18px;cursor:pointer;user-select:none;box-shadow:0 8px 22px rgba(0,0,0,0.12);min-width:140px;min-height:52px;touch-action:manipulation}
-  .yes{background:linear-gradient(135deg,#ff9ccf,#ff6fb5);color:white;border:none}
-  .no{background:linear-gradient(135deg,#ffffff,#ffe6f1);border:2px solid #ffd6ea;color:#b9417b}
+  .btn{position:relative;padding:16px 26px;border-radius:14px;font-weight:800;font-size:18px;cursor:pointer;user-select:none;box-shadow:0 8px 22px rgba(0,0,0,0.12);min-width:140px;min-height:52px;touch-action:manipulation;background:#fff}
+  .btn:focus{outline:3px solid rgba(255,111,181,0.16)}
+  .yes{background:linear-gradient(135deg,#ff9ccf,#ff6fb5);color:white;border:none; transition:transform .16s ease, box-shadow .16s ease; will-change:transform}
+  .yes:hover{ transform:scale(1.04); box-shadow:0 16px 38px rgba(255,111,181,0.22) }
+  .no{background:linear-gradient(135deg,#ffffff,#ffe6f1);border:2px solid #ffd6ea;color:#b9417b; transition:transform .22s cubic-bezier(.18,.9,.4,1)}
+  .no.wiggle{ animation: wiggle .8s ease-in-out; }
+  @keyframes wiggle{ 0%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}100%{transform:translateX(0)} }
+
+  /* Tooltip (desktop hover) */
+  .tooltip{
+    position:absolute; bottom: calc(100% + 12px); left:50%; transform:translateX(-50%) translateY(6px);
+    background:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.12);
+    font-size:13px;color:#6b3a58;white-space:nowrap; opacity:0; pointer-events:none; transition:all .16s;
+    z-index:6;
+  }
+  .btn:hover .tooltip{ opacity:1; transform:translateX(-50%) translateY(0); }
+
   .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,10,10,0.45);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
   .modal.open{opacity:1;pointer-events:auto}
   .dialog{background:linear-gradient(180deg,#fff 0%, #fff7ff 100%);border-radius:16px;padding:18px;width:min(720px,94%);text-align:center;box-shadow:0 18px 60px rgba(0,0,0,0.28);position:relative;max-height:86vh;overflow:auto}
@@ -42,10 +56,14 @@
   .small{padding:10px 14px;border-radius:10px;font-weight:700;background:#fff;border:2px solid #f1d3e4;color:#6a3653}
   .download{background:linear-gradient(135deg,#ffd166,#ffb6d5);color:#5b2a4a;border:none;padding:10px 14px;border-radius:10px;font-weight:800}
 
+  /* hidden iframes */
+  .iframes{display:none}
+
   /* responsive */
   @media (max-width:480px){
     .profile-row img{width:72px;height:72px}
     .choc{width:140px;height:140px}
+    .btn:hover .tooltip{ opacity:0; transform:translateX(-50%) translateY(6px);} /* no hover on small screens */
   }
 </style>
 </head>
@@ -56,7 +74,9 @@
 
   <div class="buttons">
     <button id="yesBtn" class="btn yes" type="button">YES ❤</button>
-    <button id="noBtn" class="btn no" type="button">NO 😿</button>
+    <button id="noBtn" class="btn no" type="button">NO 😿
+      <div class="tooltip" id="noTooltip">Hover for a reason...</div>
+    </button>
   </div>
 </div>
 
@@ -95,6 +115,16 @@
   </div>
 </div>
 
+<!-- hidden iframes for music -->
+<div class="iframes" aria-hidden="true">
+  <!-- background music starts muted for autoplay compatibility -->
+  <!-- Replace 8NFYPGgmfV8 with your preferred video ID -->
+  <iframe id="bgMusic" src="https://www.youtube.com/embed/8NFYPGgmfV8?autoplay=1&mute=1&loop=1&playlist=8NFYPGgmfV8&controls=0&rel=0&modestbranding=1&iv_load_policy=3" allow="autoplay"></iframe>
+
+  <!-- YES song iframe (set src on YES) - Replace BddP6PYo2gs with your YES song video ID -->
+  <iframe id="yesMusic" src="" allow="autoplay"></iframe>
+</div>
+
 <script>
 /* -------------------------
    Editable letter content
@@ -115,6 +145,7 @@ Say yes, and let’s make the sweetest memories together.
    ------------------------- */
 const yesBtn = document.getElementById('yesBtn');
 const noBtn = document.getElementById('noBtn');
+const noTooltip = document.getElementById('noTooltip');
 const modal = document.getElementById('modal');
 const closeModal = document.getElementById('closeModal');
 const letterText = document.getElementById('letterText');
@@ -123,13 +154,54 @@ const openGift = document.getElementById('openGift');
 const chocImg = document.getElementById('chocImg');
 const downloadLetter = document.getElementById('downloadLetter');
 const printLetter = document.getElementById('printLetter');
+const bgIframe = document.getElementById('bgMusic');
+const yesIframe = document.getElementById('yesMusic');
 
-/* small UX: ensure audio context resume gesture allowance if needed */
-document.addEventListener('click', function once(){ try{ if(window.AudioContext) new AudioContext().resume().catch(()=>{}); }catch(e){} document.removeEventListener('click', once); }, {passive:true});
+let tooltipInterval = null;
+
+/* -------------------------
+   NO tooltip cycling (desktop hover) & touch fallback
+   ------------------------- */
+const reasons = [
+  "Because I’ll make you smile every single day.",
+  "Because you already live in my mind rent-free.",
+  "Because you deserve someone who chooses you every time — and that’s me.",
+  "Because together we’ll be the cutest couple ever.",
+  "Because I make great snacks and share them. 😄",
+  "Because I will never let you feel alone.",
+  "Because saying yes will make my entire universe brighter."
+];
+
+function randReason(){ return reasons[Math.floor(Math.random()*reasons.length)]; }
+
+// Desktop hover: start cycling reasons
+noBtn.addEventListener('mouseenter', () => {
+  noTooltip.textContent = randReason();
+  if(tooltipInterval) clearInterval(tooltipInterval);
+  tooltipInterval = setInterval(()=>{ noTooltip.textContent = randReason(); }, 1400);
+  // small wiggle occasionally
+  noBtn.classList.remove('wiggle');
+});
+noBtn.addEventListener('mouseleave', () => {
+  if(tooltipInterval) clearInterval(tooltipInterval);
+  tooltipInterval = null;
+});
+
+// Touch: on touchstart show tooltip briefly and cycle while touching
+noBtn.addEventListener('touchstart', (e) => {
+  noTooltip.textContent = randReason();
+  noBtn.classList.add('show-tooltip');
+  if(tooltipInterval) clearInterval(tooltipInterval);
+  tooltipInterval = setInterval(()=>{ noTooltip.textContent = randReason(); }, 1400);
+}, {passive:true});
+noBtn.addEventListener('touchend', (e) => {
+  if(tooltipInterval) clearInterval(tooltipInterval);
+  tooltipInterval = null;
+  noBtn.classList.remove('show-tooltip');
+}, {passive:true});
 
 /* -------------------------
    Typed-letter function
-   Type the letter into the letterText element with speed and small pauses.
    ------------------------- */
 function typeLetter(text, el, cb){
   el.textContent = '';
@@ -142,7 +214,6 @@ function typeLetter(text, el, cb){
     }
     const ch = chars[i++];
     el.textContent += ch;
-    // small longer pause after punctuation
     let delay = 28 + Math.random()*18;
     if(ch === ',' ) delay = 90;
     if(ch === '.' ) delay = 160;
@@ -153,47 +224,73 @@ function typeLetter(text, el, cb){
 }
 
 /* -------------------------
-   YES click: open modal, type letter, show gift controls
+   Background music unmute helper
+   ------------------------- */
+let bgUnmuted = false;
+function tryUnmuteBackgroundOnGesture(){
+  if(bgUnmuted) return;
+  try{
+    // replace iframe src without &mute=1 to attempt unmuting (works only if browser allows)
+    const src = bgIframe.src;
+    if(src && src.indexOf('mute=1') !== -1){
+      const newSrc = src.replace('mute=1','mute=0');
+      // set after a small gesture, but only if document has user gesture
+      bgIframe.src = newSrc;
+      bgUnmuted = true;
+    }
+  }catch(e){}
+}
+
+// Resume on first user click/tap (some browsers require)
+document.addEventListener('click', function one(){
+  tryUnmuteBackgroundOnGesture();
+  document.removeEventListener('click', one);
+}, {passive:true});
+
+/* -------------------------
+   YES click: open modal, type letter, reveal gift, play YES song and stop background
    ------------------------- */
 yesBtn.addEventListener('click', (e) => {
+  // hide background iframe (most reliable way to stop)
+  try{ bgIframe.style.display = 'none'; }catch(e){}
+  // set yes music src (autoplay param)
+  // Replace BddP6PYo2gs with any YouTube video id you want for the YES song
+  yesIframe.src = 'https://www.youtube.com/embed/BddP6PYo2gs?autoplay=1&loop=1&playlist=BddP6PYo2gs&controls=0&rel=0&modestbranding=1&iv_load_policy=3';
   // show modal
   modal.classList.add('open');
   modal.setAttribute('aria-hidden','false');
 
-  // clear previous
+  // prepare letter + gift
   letterText.textContent = '';
   giftWrap.setAttribute('aria-hidden','true');
   chocImg.classList.remove('revealed');
+  openGift.disabled = false;
+  openGift.textContent = 'Open Gift 🍫';
 
-  // small celebration: show love-stream (kept simple)
-  // type the letter (start after small delay to let modal settle)
+  // small pop on YES button
+  yesBtn.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:420});
+
+  // type the letter
   setTimeout(()=> {
     typeLetter(myLetter, letterText, () => {
-      // after typing finished, reveal gift controls
       giftWrap.setAttribute('aria-hidden','false');
-      // gentle focus to "Open Gift"
       openGift.focus();
-      // optional tiny pulse on openGift
-      openGift.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:700,easing:'ease-out'});
     });
   }, 360);
 });
 
 /* -------------------------
-   Open gift (reveal chocolate GIF)
+   Open gift
    ------------------------- */
 openGift.addEventListener('click', () => {
-  // add revealed class for transform/opacity
   chocImg.classList.add('revealed');
-  // small shake/pulse to mimic excitement
   chocImg.animate([{transform:'translateY(0)'},{transform:'translateY(-8px)'},{transform:'translateY(0)'}],{duration:700,iterations:1,easing:'ease-out'});
-  // hide open button after reveal to avoid multiple clicks
   openGift.disabled = true;
   openGift.textContent = 'Opened 🍫';
 });
 
 /* -------------------------
-   Download letter as .txt
+   Download & Print
    ------------------------- */
 downloadLetter.addEventListener('click', () => {
   const filename = 'my_love_letter.txt';
@@ -208,9 +305,6 @@ downloadLetter.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-/* -------------------------
-   Print letter (opens print dialog with letter content)
-   ------------------------- */
 printLetter.addEventListener('click', () => {
   const win = window.open('', '_blank', 'noopener');
   if(!win) { alert('Popup blocked — please allow popups to print.'); return; }
@@ -221,11 +315,9 @@ printLetter.addEventListener('click', () => {
   win.document.open();
   win.document.write(html);
   win.document.close();
-  // give the new window a moment to render then call print
   setTimeout(()=>{ win.print(); }, 450);
 });
 
-/* escape HTML to show raw text safely */
 function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 /* -------------------------
@@ -234,31 +326,52 @@ function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 closeModal.addEventListener('click', () => {
   modal.classList.remove('open');
   modal.setAttribute('aria-hidden','true');
-  // reset open button state for next open
+  // stop yes music
+  try{ yesIframe.src = ''; }catch(e){}
+  // show background iframe again and attempt to unmute if allowed
+  try{ bgIframe.style.display = ''; tryUnmuteBackgroundOnGesture(); }catch(e){}
+  // reset open gift button
   openGift.disabled = false;
   openGift.textContent = 'Open Gift 🍫';
   chocImg.classList.remove('revealed');
 });
 
 /* -------------------------
-   NO button behavior (simple playful move)
+   NO button playful behavior
    ------------------------- */
 noBtn.addEventListener('click', (e) => {
-  // small playful nudge and tooltip change
-  noBtn.animate([{transform:'translateY(0)'},{transform:'translateY(-8px)'},{transform:'translateY(0)'}],{duration:420});
-  const reasons = [
-    'Because I’ll make you smile every single day.',
-    'Because you already live in my mind rent-free.',
-    'Because you deserve someone who chooses you every time — and that’s me.',
-    "Because I make great snacks and share them. 😄",
-    "Because I’ll always listen — even to your rants.",
-    'Because I will never let you feel alone.'
-  ];
-  const r = reasons[Math.floor(Math.random()*reasons.length)];
+  // quick nudge + change text briefly
+  noBtn.classList.add('wiggle');
+  setTimeout(()=> noBtn.classList.remove('wiggle'), 820);
+  const r = randReason();
   const old = noBtn.textContent;
   noBtn.textContent = 'No 😿 — ' + r;
-  setTimeout(()=>{ noBtn.textContent = 'NO 😿'; }, 2500);
+  // restore label after 2.5s
+  setTimeout(()=>{ noBtn.innerHTML = 'NO 😿<div class="tooltip" id="noTooltip">Hover for a reason...</div>'; }, 2500);
 });
+
+/* -------------------------
+   Small accessibility: keyboard
+   ------------------------- */
+yesBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); yesBtn.click(); }});
+noBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); noBtn.click(); }});
+
+/* -------------------------
+   Allow attempt to unmute background after initial gesture
+   ------------------------- */
+function tryUnmuteBackgroundOnGesture(){
+  if(!bgIframe) return;
+  try{
+    const src = bgIframe.src || '';
+    if(src.includes('mute=1')){
+      const newSrc = src.replace('mute=1','mute=0');
+      bgIframe.src = newSrc;
+    }
+  }catch(e){}
+}
+
+// try to unmute once the user interacts
+document.addEventListener('pointerdown', function onFirst(){ tryUnmuteBackgroundOnGesture(); document.removeEventListener('pointerdown', onFirst); }, {passive:true});
 </script>
 </body>
 </html>
