@@ -2,543 +2,479 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Will you be my girlfriend? 💖</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg1:#ffeef7; --bg2:#fff7ea; --accent:#ff6fb5; --muted:#6b5b6e;
-    --card-bg: rgba(255,255,255,0.92); --glass: rgba(255,255,255,0.64);
+    --bg:#fff0f8;
+    --accent:#ff6fb5;
+    --accent2:#ffd166;
+    --muted:#444;
   }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:linear-gradient(135deg,var(--bg1),var(--bg2)); overflow:hidden;color:var(--muted);-webkit-font-smoothing:antialiased;}
-  .wrap{height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;box-sizing:border-box;position:relative}
+  html,body{height:100%;margin:0;font-family: 'Poppins', system-ui, sans-serif;background:linear-gradient(160deg,#ffeef7 0%, #fff7ea 60%);overflow:hidden}
+  .wrap{position:relative; z-index:2; min-height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; padding:24px; text-align:center}
+  h1{font-size: clamp(20px,6vw,36px); margin:0 0 6px; color:var(--muted)}
+  p.lead{margin:0;color:#7d5a7a; font-size:clamp(13px,3.4vw,16px)}
+  .buttons{display:flex; gap:14px; align-items:center; justify-content:center; margin-top:14px; flex-wrap:wrap}
+  .btn{position:relative;padding:16px 26px;border-radius:14px;font-weight:800;font-size:18px;cursor:pointer;user-select:none;box-shadow:0 8px 22px rgba(0,0,0,0.12);min-width:140px;min-height:52px;touch-action:manipulation;background:#fff}
+  .btn:focus{outline:3px solid rgba(255,111,181,0.16)}
+  .yes{background:linear-gradient(135deg,#ff9ccf,#ff6fb5);color:white;border:none; transition:transform .16s ease, box-shadow .16s ease; will-change:transform}
+  .yes:hover{ transform:scale(1.04); box-shadow:0 16px 38px rgba(255,111,181,0.22) }
+  .no{background:linear-gradient(135deg,#ffffff,#ffe6f1);border:2px solid #ffd6ea;color:#b9417b; transition:transform .22s cubic-bezier(.18,.9,.4,1)}
+  .no.wiggle{ animation: wiggle .8s ease-in-out; }
+  @keyframes wiggle{ 0%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}100%{transform:translateX(0)} }
 
-  h1{font-size:clamp(22px,4vw,42px);margin:8px 0 12px;color:#7a3b63;text-align:center}
-  p.lead{max-width:720px;text-align:center;margin:0 0 20px;color:#7a3b63b3;padding:0 12px}
+  /* Tooltip (desktop hover) */
+  .tooltip{
+    position:absolute; bottom: calc(100% + 12px); left:50%; transform:translateX(-50%) translateY(6px);
+    background:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.12);
+    font-size:13px;color:#6b3a58;white-space:nowrap; opacity:0; pointer-events:none; transition:all .16s;
+    z-index:6;
+  }
+  .btn:hover .tooltip{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-  .actions{display:flex;gap:16px;align-items:center;justify-content:center;z-index:40}
-  button.btn{padding:12px 20px;border-radius:14px;border:none;font-weight:700;cursor:pointer;outline:none;box-shadow:0 8px 28px rgba(120,45,90,0.06);user-select:none}
-  .yes{background:linear-gradient(180deg,#ffb3d1,#ff6fb5);color:#fff;font-size:18px;animation:yes-bounce 2000ms ease-in-out infinite;transition:transform .22s}
-  @keyframes yes-bounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-6px) scale(1.012)}100%{transform:translateY(0) scale(1)}}
-  .no{background:transparent;color:var(--accent);border:2px solid rgba(255,111,181,0.26);padding:10px 18px;border-radius:12px;position:fixed;right:6%;top:50%}
+  .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,10,10,0.45);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+  .modal.open{opacity:1;pointer-events:auto}
+  .dialog{background:linear-gradient(180deg,#fff 0%, #fff7ff 100%);border-radius:16px;padding:18px;width:min(720px,94%);text-align:center;box-shadow:0 18px 60px rgba(0,0,0,0.28);position:relative;max-height:86vh;overflow:auto}
+  .profile-row{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:10px}
+  .profile-row img{width:88px;height:88px;object-fit:cover;border-radius:12px;box-shadow:0 10px 28px rgba(255,111,181,0.14)}
+  .love-stream{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+  .love-stream span{font-size:22px;animation:pop 1.2s ease-in-out infinite}
+  @keyframes pop{0%{transform:translateY(0) scale(.9)}50%{transform:translateY(-8px) scale(1.12)}100%{transform:translateY(0) scale(.95)}}
 
-  .tooltip{position:absolute;top:-46px;left:50%;transform:translateX(-50%);background:var(--card-bg);padding:8px 12px;border-radius:12px;font-size:13px;color:var(--muted);backdrop-filter:blur(6px);box-shadow:0 8px 26px rgba(120,45,90,0.06);opacity:0;transition:opacity .18s,transform .18s;pointer-events:none}
-  .no:hover .tooltip{opacity:1;transform:translateX(-50%) translateY(-4px)}
+  /* Letter box */
+  .letterBox{margin-top:12px;text-align:left;background:#fff7fb;border-radius:12px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,0.06);font-size:15px;color:#5b3a53;line-height:1.45;min-height:110px}
+  .letterText{white-space:pre-wrap; min-height:90px; font-family:inherit; font-size:15px}
 
-  /* background layers */
-  .bg-layer{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
-  .hearts{position:absolute;inset:0;pointer-events:none;z-index:2}
+  /* chocolate & panda gift */
+  .giftWrap{margin-top:12px;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .choc{width:160px;height:160px;object-fit:contain;border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,0.12);opacity:0;transform:scale(.8);transition:all .42s cubic-bezier(.2,.9,.28,1)}
+  .choc.revealed{opacity:1;transform:scale(1)}
+  .panda{width:140px;height:140px;object-fit:contain;border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px);transition:all .42s ease}
+  .panda.revealed{opacity:1;transform:translateY(0)}
+  .giftBtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
 
-  /* canvas layers */
-  #cursorCanvas,#confettiCanvas{position:fixed;left:0;top:0;pointer-events:none;z-index:60}
+  .small{padding:10px 14px;border-radius:10px;font-weight:700;background:#fff;border:2px solid #f1d3e4;color:#6a3653}
+  .download{background:linear-gradient(135deg,#ffd166,#ffb6d5);color:#5b2a4a;border:none;padding:10px 14px;border-radius:10px;font-weight:800}
 
-  /* modal */
-  .modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:80;padding:18px;background:linear-gradient(180deg,rgba(255,111,181,0.04),rgba(255,209,220,0.02))}
-  .modal{width:100%;max-width:760px;background:linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,250,250,0.98));border-radius:18px;padding:18px;box-shadow:0 30px 90px rgba(120,45,90,0.12);position:relative;overflow:visible}
-  .modal .grid{display:flex;gap:12px;align-items:center}
-  .photo{width:42%;min-width:120px;border-radius:14px;padding:6px;background:linear-gradient(90deg,rgba(255,111,181,0.06),rgba(255,209,206,0.05));box-shadow:0 12px 30px rgba(123,48,96,0.05);display:flex;align-items:center;justify-content:center}
-  .photo img{width:100%;height:100%;object-fit:cover;border-radius:11px;box-shadow:0 0 20px rgba(255,111,181,0.12)}
-  .close-btn{position:absolute;right:12px;top:12px;border:none;background:transparent;font-size:20px;cursor:pointer;color:#9b6a86}
+  /* counters */
+  .counters{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.75);padding:8px 10px;border-radius:12px;font-size:13px;color:#6b3a58;box-shadow:0 8px 18px rgba(0,0,0,0.08)}
 
-  .love-stream{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;gap:8px;pointer-events:none;z-index:85}
+  /* hidden iframes */
+  .iframes{display:none}
 
-  .mobile-extras{display:none;margin-top:12px;text-align:center}
-  .choco,.panda,.letter{display:inline-block;margin:6px;padding:12px;border-radius:12px;background:var(--glass);box-shadow:0 12px 30px rgba(120,45,90,0.06);vertical-align:top}
-  .gif-placeholder{width:140px;height:100px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#a66;background:linear-gradient(90deg,#fff7f7,#fffaf0)}
-
-  .chat-toggle{position:fixed;right:18px;bottom:18px;z-index:70;background:linear-gradient(180deg,#ffddeb,#ffb8d6);border-radius:999px;padding:12px;box-shadow:0 12px 36px rgba(120,45,90,0.08);cursor:pointer}
-  .chat-panel{position:fixed;right:18px;bottom:74px;width:320px;max-width:90vw;background:var(--card-bg);border-radius:12px;padding:8px;box-shadow:0 12px 40px rgba(120,45,90,0.08);z-index:70;display:none;flex-direction:column;gap:8px}
-  .chat-messages{height:210px;overflow:auto;padding:6px;border-radius:8px;background:transparent}
-  .chip{display:inline-block;padding:8px 10px;background:#fff;border-radius:999px;font-size:13px;color:#8a5b76;margin:6px 4px}
-
-  @media (max-width:520px){
-    .actions{flex-direction:column-reverse;gap:10px}
-    .photo{width:45%}
-    .modal .grid{flex-direction:column;align-items:center}
-    .mobile-extras{display:block}
+  /* responsive */
+  @media (max-width:480px){
+    .profile-row img{width:72px;height:72px}
+    .choc{width:140px;height:140px}
+    .btn:hover .tooltip{ opacity:0; transform:translateX(-50%) translateY(6px);} /* no hover on small screens */
   }
 
-  /* LETTER: paper-open + typewriter */
-  .letter { width:320px; max-width:92%; margin:8px auto; position:relative; perspective:900px; transform-style:preserve-3d; }
-  .paper {
-    background: linear-gradient(180deg,#fff,#fff9f8);
-    border-radius:10px;
-    padding:14px 16px;
-    box-shadow:0 20px 50px rgba(120,45,90,0.08);
-    transform-origin: top center;
-    transform: rotateX(88deg) translateY(8px) scale(0.98);
-    opacity:0;
-    transition: transform 700ms cubic-bezier(.2,.9,.22,1), opacity 360ms ease;
-    position:relative;
-    overflow:hidden;
-    border:1px solid rgba(230,200,215,0.6);
-  }
-  .paper.open {
-    transform: rotateX(0deg) translateY(0) scale(1);
-    opacity:1;
-  }
-  /* tiny fold detail */
-  .paper::before{
-    content:"";
-    position:absolute;
-    left:0;right:0;top:0;height:28px;
-    background:linear-gradient(180deg, rgba(255,111,181,0.06), rgba(255,255,255,0.02));
-    transform-origin:top;
-    border-bottom:1px solid rgba(255,111,181,0.03);
-  }
-  .typed { white-space:pre-wrap; display:block; font-size:15px; color:#6b5160; line-height:1.45; min-height:54px }
-  .cursor-blink { display:inline-block; width:10px; animation:blink 1s steps(2) infinite; vertical-align:bottom; color:#c96b93 }
-  @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
-
-  /* selection disable */
-  button, .chip { user-select:none; -webkit-user-select:none }
-
-  /* accessibility focus ring */
-  button:focus{box-shadow:0 0 0 6px rgba(255,111,181,0.08)}
+  /* confetti canvas sits behind modal but above background (higher z-index than wrap) */
+  canvas.confetti-canvas{position:fixed; inset:0; z-index:60; pointer-events:none}
 </style>
 </head>
 <body>
-<div class="wrap" id="root">
-  <div class="bg-layer" aria-hidden="true"><div class="hearts" id="hearts"></div></div>
-  <canvas id="cursorCanvas"></canvas>
-  <canvas id="confettiCanvas"></canvas>
+<div class="wrap" id="pageWrap">
+  <h1>Will you be my girlfriend? 💗</h1>
+  <p class="lead">Because I’ll make you smile every single day. Choose carefully (but I hope you choose yes!)</p>
 
-  <h1>Will you be my girlfriend? 💖</h1>
-  <p class="lead">This page is just for her — if she says yes, there’s a little surprise inside. 💌</p>
-
-  <div class="actions" id="actions">
-    <button class="btn no" id="noBtn">NO
-      <div class="tooltip" id="noTooltip">Because you're awesome</div>
+  <div class="buttons">
+    <button id="yesBtn" class="btn yes" type="button">YES ❤</button>
+    <button id="noBtn" class="btn no" type="button">NO 😿
+      <div class="tooltip" id="noTooltip">Hover for a reason...</div>
     </button>
-
-    <button class="btn yes" id="yesBtn">YES</button>
-  </div>
-
-  <div class="modal-backdrop" id="modalBack" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="sheYesHeading">
-      <button class="close-btn" id="modalClose" aria-label="Close">✕</button>
-      <div style="display:flex;gap:12px;align-items:center;">
-        <div style="flex:1">
-          <h2 id="sheYesHeading">She said YES!</h2>
-          <p id="modalText">My heart is full — here's the little world I made just for you. 💞</p>
-
-          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <label class="chip">Upload Photo (You)<input id="uploadYou" type="file" accept="image/*"></label>
-            <label class="chip">Upload Photo (Her)<input id="uploadHer" type="file" accept="image/*"></label>
-            <label class="chip">Upload Chocolate GIF<input id="uploadChocoGif" type="file" accept="image/gif,image/*"></label>
-            <label class="chip">Upload Panda GIF<input id="uploadPandaGif" type="file" accept="image/gif,image/*"></label>
-          </div>
-        </div>
-
-        <div style="width:42%;min-width:140px">
-          <div class="grid" style="align-items:center">
-            <div class="photo" id="photoYou"><img id="imgYou" alt="You photo" src=""></div>
-            <div class="photo" id="photoHer"><img id="imgHer" alt="Her photo" src=""></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="love-stream" id="loveStream" aria-hidden="true"></div>
-
-      <div class="mobile-extras" id="mobileExtras">
-        <!-- Paper letter (paper-open + typewriter) -->
-        <div class="letter" id="letterCard" aria-hidden="false">
-          <div class="paper" id="paperEl">
-            <div class="typed" id="letterText">My dearest — I want to hold your hand and laugh with you forever.💌</div>
-          </div>
-        </div>
-
-        <!-- placeholders that will be replaced when you upload GIFs -->
-        <div class="choco" id="chocoHolder" title="Chocolate">
-          <div id="chocoInner" class="gif-placeholder">Chocolate GIF</div>
-        </div>
-        <div class="panda" id="pandaHolder" title="Panda dance">
-          <div id="pandaInner" class="gif-placeholder">Panda GIF</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="chat-toggle" id="chatToggle">💬</div>
-  <div class="chat-panel" id="chatPanel" role="dialog" aria-label="Chat">
-    <div style="display:flex;align-items:center;gap:8px;padding:6px;">
-      <strong style="font-size:14px;color:#7a3b63">Cute Chat</strong><span style="font-size:12px;color:#9b6a86">— talk to her</span>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div style="display:flex;gap:8px;padding-top:6px">
-      <textarea id="chatInput" style="flex:1;border-radius:8px;padding:8px;border:1px solid rgba(120,45,90,0.06);height:44px"></textarea>
-      <button class="chip" id="chatSend">Send</button>
-    </div>
-  </div>
-
-  <!-- hidden YouTube iframes -->
-  <div style="position:fixed;left:-9999px;top:-9999px;opacity:0" aria-hidden="true">
-    <iframe id="bgMusic" width="0" height="0" src="https://www.youtube.com/embed/EvzNDQLwCqw?autoplay=1&loop=1&playlist=EvzNDQLwCqw&controls=0&disablekb=1&modestbranding=1" frameborder="0" allow="autoplay"></iframe>
-    <iframe id="secondMusic" width="0" height="0" src="" frameborder="0" allow="autoplay"></iframe>
-    <iframe id="thirdMusic" width="0" height="0" src="" frameborder="0" allow="autoplay"></iframe>
   </div>
 </div>
 
+<!-- small counters -->
+<div class="counters" aria-hidden="false">
+  <div>No taps: <span id="noCount">0</span></div>
+  <div>Yes taps: <span id="yesCount">0</span></div>
+</div>
+
+<!-- modal -->
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="yesTitle">
+    <div class="profile-row">
+      <img id="imgYou" src="you.jpg" alt="You (replace you.jpg)">
+      <img id="imgCrush" src="crush.jpg" alt="Her (replace crush.jpg)">
+    </div>
+
+    <h2 id="yesTitle">She said YES! 🎉</h2>
+    <p style="margin:6px 0 10px;color:#5b3a53">You just made my world — I promise to make yours brighter every day.</p>
+
+    <!-- typed letter area -->
+    <div class="letterBox" id="letterBox" aria-live="polite" aria-atomic="true">
+      <div style="font-weight:700;margin-bottom:6px;color:#7a3b5b">A special letter for you</div>
+      <div class="letterText" id="letterText">
+        <!-- typed text goes here -->
+      </div>
+    </div>
+
+    <!-- gift reveal -->
+    <div class="giftWrap" id="giftWrap" aria-hidden="true">
+      <img id="chocImg" class="choc" src="chocolate.gif" alt="Chocolate gift (replace chocolate.gif)">
+      <img id="pandaImg" class="panda" src="panda.gif" alt="Panda dance (replace panda.gif)">
+      <div class="giftBtns">
+        <button id="openGift" class="small" type="button">Open Gift 🍫</button>
+        <button id="downloadLetter" class="download" type="button">Download Letter</button>
+        <button id="printLetter" class="small" type="button">Print</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <button id="closeModal" class="small" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- confetti canvas -->
+<canvas class="confetti-canvas" id="confettiCanvas" aria-hidden="true"></canvas>
+
+<!-- hidden iframes for music -->
+<div class="iframes" aria-hidden="true">
+  <!-- background music starts muted for autoplay compatibility -->
+  <!-- Replace BG_VIDEO_ID with your preferred video ID -->
+  <iframe id="bgMusic" src="https://www.youtube.com/embed/BG_VIDEO_ID?autoplay=1&mute=1&loop=1&playlist=BG_VIDEO_ID&controls=0&rel=0&modestbranding=1&iv_load_policy=3"></iframe>
+
+  <!-- YES song iframe (set src on YES) - Replace YES_VIDEO_ID with your YES song video ID -->
+  <iframe id="yesMusic" src="" allow="autoplay"></iframe>
+</div>
+
 <script>
-/* ==========================
-   Elements & basic state
-   ========================== */
+/* -------------------------
+   Editable letter content
+   ------------------------- */
+const myLetter = `Hey love,
+
+From the moment I met you, everything started to feel brighter. Your laugh, your little habits, the way you look at the world — I want to be the person who keeps that smile on your face.
+
+I promise to support you, to listen, to make you chai when you're tired, to celebrate your wins and hold you on rainy days. I might not be perfect, but I will always try to be better for you.
+
+Say yes, and let’s make the sweetest memories together.
+
+— [Your Name] 💖`;
+
+/* -------------------------
+   Elements
+   ------------------------- */
 const yesBtn = document.getElementById('yesBtn');
 const noBtn = document.getElementById('noBtn');
 const noTooltip = document.getElementById('noTooltip');
-const heartsLayer = document.getElementById('hearts');
-const cursorCanvas = document.getElementById('cursorCanvas');
-const confettiCanvas = document.getElementById('confettiCanvas');
-const modalBack = document.getElementById('modalBack');
-const modalClose = document.getElementById('modalClose');
-const uploadYou = document.getElementById('uploadYou');
-const uploadHer = document.getElementById('uploadHer');
-const uploadChocoGif = document.getElementById('uploadChocoGif');
-const uploadPandaGif = document.getElementById('uploadPandaGif');
-const chocoInner = document.getElementById('chocoInner');
-const pandaInner = document.getElementById('pandaInner');
-const mobileExtras = document.getElementById('mobileExtras');
-const loveStream = document.getElementById('loveStream');
-const paperEl = document.getElementById('paperEl');
+const modal = document.getElementById('modal');
+const closeModal = document.getElementById('closeModal');
 const letterText = document.getElementById('letterText');
+const giftWrap = document.getElementById('giftWrap');
+const openGift = document.getElementById('openGift');
+const chocImg = document.getElementById('chocImg');
+const pandaImg = document.getElementById('pandaImg');
+const downloadLetter = document.getElementById('downloadLetter');
+const printLetter = document.getElementById('printLetter');
+const bgIframe = document.getElementById('bgMusic');
+const yesIframe = document.getElementById('yesMusic');
+const noCountEl = document.getElementById('noCount');
+const yesCountEl = document.getElementById('yesCount');
 
-const bgMusic = document.getElementById('bgMusic');
-const secondMusic = document.getElementById('secondMusic');
-const thirdMusic = document.getElementById('thirdMusic');
-
-let yesScale = 1;
-let audioCtx = null;
 let tooltipInterval = null;
+let noCount = 0;
+let yesCount = 0;
 
-/* YouTube IDs (from your links) */
-const secondVideoId = 'U2SVCCENLjE';
-const thirdVideoId = 'BddP6PYo2gs';
+/* -------------------------
+   NO tooltip cycling (desktop hover) & touch fallback
+   ------------------------- */
+const reasons = [
+  "Because I’ll make you smile every single day.",
+  "Because you already live in my mind rent-free.",
+  "Because you deserve someone who chooses you every time — and that’s me.",
+  "Because together we’ll be the cutest couple ever.",
+  "Because I make great snacks and share them. 😄",
+  "Because I will never let you feel alone.",
+  "Because saying yes will make my entire universe brighter."
+];
 
-/* ==========================
-   Initial NO placement
-   ========================== */
-function setInitialNoPosition(){
-  noBtn.style.right = '6%';
-  noBtn.style.top = '50%';
-  noBtn.style.position = 'fixed';
-}
-setInitialNoPosition();
-window.addEventListener('resize', setInitialNoPosition);
+function randReason(){ return reasons[Math.floor(Math.random()*reasons.length)]; }
 
-/* ==========================
-   Floating hearts
-   ========================== */
-function spawnHeart(){
-  const el = document.createElement('div');
-  const size = 18 + Math.random()*28;
-  el.style.position = 'absolute';
-  el.style.left = (6 + Math.random()*88) + '%';
-  el.style.bottom = '-60px';
-  el.style.pointerEvents = 'none';
-  el.style.zIndex = 2;
-  const hue = 320 + Math.round(Math.random()*40);
-  el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24"><path fill="hsl(${hue} 80% 75%)" d="M12 21s-6.7-4.65-9.1-7.04C0.61 11.71 1.01 7.1 4.6 5.6 7.59 4.3 10 6 12 8.5c2-2.5 4.41-4.2 7.4-2.9 3.59 1.5 3.99 6.11 1.7 8.36C18.72 16.34 12 21 12 21z"/></svg>`;
-  heartsLayer.appendChild(el);
-  const duration = 12 + Math.random()*10;
-  const start = performance.now();
-  function frame(now){
-    const t = (now - start) / (duration*1000);
-    if(t>1){ el.remove(); return; }
-    el.style.transform = `translateY(${-t*(innerHeight*0.6 + 200)}px) scale(${1 - t*0.22})`;
-    el.style.opacity = Math.max(0, 1 - t*1.2);
-    requestAnimationFrame(frame);
+noBtn.addEventListener('mouseenter', () => {
+  noTooltip.textContent = randReason();
+  if(tooltipInterval) clearInterval(tooltipInterval);
+  tooltipInterval = setInterval(()=>{ noTooltip.textContent = randReason(); }, 1400);
+  noBtn.classList.remove('wiggle');
+});
+noBtn.addEventListener('mouseleave', () => {
+  if(tooltipInterval) clearInterval(tooltipInterval);
+  tooltipInterval = null;
+});
+noBtn.addEventListener('touchstart', (e) => {
+  noTooltip.textContent = randReason();
+  if(tooltipInterval) clearInterval(tooltipInterval);
+  tooltipInterval = setInterval(()=>{ noTooltip.textContent = randReason(); }, 1400);
+}, {passive:true});
+noBtn.addEventListener('touchend', (e) => {
+  if(tooltipInterval) clearInterval(tooltipInterval);
+  tooltipInterval = null;
+}, {passive:true});
+
+/* -------------------------
+   Typed-letter function
+   ------------------------- */
+function typeLetter(text, el, cb){
+  el.textContent = '';
+  const chars = Array.from(text);
+  let i = 0;
+  function step(){
+    if(i >= chars.length){
+      if(cb) cb();
+      return;
+    }
+    const ch = chars[i++];
+    el.textContent += ch;
+    let delay = 28 + Math.random()*18;
+    if(ch === ',' ) delay = 90;
+    if(ch === '.' ) delay = 160;
+    if(ch === '\n') delay = 210;
+    setTimeout(step, delay);
   }
-  requestAnimationFrame(frame);
-  setTimeout(()=>el.remove(), 17500);
+  step();
 }
-setInterval(spawnHeart, 1400);
-spawnHeart();
 
-/* ==========================
-   Sparkle cursor (canvas)
-   ========================== */
-const cCursor = cursorCanvas;
-const cc = cCursor.getContext('2d');
-function resizeCursorCanvas(){ cCursor.width = innerWidth; cCursor.height = innerHeight; }
-resizeCursorCanvas(); window.addEventListener('resize', resizeCursorCanvas);
+/* -------------------------
+   Confetti (vanilla) - small lightweight implementation
+   ------------------------- */
+const confettiCanvas = document.getElementById('confettiCanvas');
+const confettiCtx = confettiCanvas.getContext('2d');
+let confettiPieces = [];
+function resizeCanvas(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-const particles = [];
-function addCursorParticles(x,y){
-  for(let i=0;i<6;i++){
-    particles.push({
-      x: x + (Math.random()-0.5)*24,
-      y: y + (Math.random()-0.5)*24,
-      vx: (Math.random()-0.5)*1.2,
-      vy: -1.2 - Math.random()*1.6,
-      life: 0,
-      maxLife: 650 + Math.random()*500,
-      size: 2 + Math.random()*3,
-      hue: 320 + Math.random()*40
-    });
-  }
+function spawnConfetti(count){
+  confettiPieces = confettiPieces.concat(Array.from({length:count}).map(() => {
+    return {
+      x: Math.random()*confettiCanvas.width,
+      y: -10 - Math.random()*200,
+      vx: (Math.random()-0.5)*4,
+      vy: 2 + Math.random()*4,
+      size: 6 + Math.random()*10,
+      rot: Math.random()*360,
+      rotSpeed: (Math.random()-0.5)*8,
+      color: `hsl(${Math.floor(Math.random()*360)} ${60 + Math.random()*40}% ${55 + Math.random()*20}%)`,
+      life: 300 + Math.random()*200
+    };
+  }));
+  if(!confettiRunning) requestAnimationFrame(confettiLoop);
 }
-window.addEventListener('mousemove', (e)=>{ addCursorParticles(e.clientX,e.clientY); if(Math.random()<0.12) tryNoEscape(); });
-
-function drawCursor(){
-  cc.clearRect(0,0,cCursor.width,cCursor.height);
-  for(let i=particles.length-1;i>=0;i--){
-    const p = particles[i];
-    p.life += 16;
+let confettiRunning = false;
+function confettiLoop(){
+  confettiRunning = true;
+  confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+  for(let i = confettiPieces.length-1; i >= 0; i--){
+    const p = confettiPieces[i];
     p.x += p.vx;
     p.y += p.vy;
-    p.vy += 0.03;
-    const alpha = Math.max(0,1 - p.life/p.maxLife);
-    cc.beginPath();
-    cc.fillStyle = `hsla(${p.hue},80%,70%,${alpha})`;
-    cc.arc(p.x,p.y,p.size,0,Math.PI*2);
-    cc.fill();
-    if(p.life > p.maxLife) particles.splice(i,1);
+    p.vy += 0.06; // gravity
+    p.rot += p.rotSpeed;
+    p.life--;
+    // draw rectangle rotated
+    confettiCtx.save();
+    confettiCtx.translate(p.x, p.y);
+    confettiCtx.rotate(p.rot*Math.PI/180);
+    confettiCtx.fillStyle = p.color;
+    confettiCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
+    confettiCtx.restore();
+    if(p.y > confettiCanvas.height + 40 || p.life < 0) confettiPieces.splice(i,1);
   }
-  requestAnimationFrame(drawCursor);
-}
-drawCursor();
-
-/* ==========================
-   NO tooltip cycling
-   ========================== */
-const reasons = [
-"You're too cute","You have sparkly eyes","You hug too well","You smell like sunshine","I forgot my keys",
-"I need to finish my drawing","My cat disapproves","I need to water my plants","My tea is brewing","I promised to call mom",
-"You're too tall for me","I'm shy (but secretly excited)","My moon is full tonight","I have a chocolate emergency","I have glitter stuck in my hair",
-"My socks are mismatched","I'm practicing being mysterious","I will say yes tomorrow","You blinked first","I'm allergic to bad decisions",
-"My panda is sleeping","My phone's battery is 1%","I can't decide between pizza and tacos","I have a tea leaf reading scheduled","I must finish this song",
-"I'm learning to juggle feelings","My shoelace is untied","I need to pet a puppy","My cupcake just cooled","I promised the stars I'd wait","My heart is polishing itself",
-"I'm checking my horoscope","My cupcake has sprinkles","The moon asked me to think","I have a cute-cry to finish","My diary is closed","I'm doing a secret handshake",
-"My ripple of joy is paused","I'm collecting courage","My ribbon's stuck","The wind recommended waiting","My tea needs sugar","My teddy wants to talk","I need to finish this puzzle","My sweater needs a hug",
-"My cloud is late","I'm saving this for a picnic","My smile is charging","I need one more heartbeat","I forgot how to be brave"
-];
-reasons.push(...reasons.slice(0,10).map(r=>r+" 💌"));
-let tooltipIdx = 0;
-noBtn.addEventListener('mouseover', ()=>{
-  tooltipIdx = Math.floor(Math.random()*reasons.length);
-  noTooltip.textContent = reasons[tooltipIdx];
-  tooltipInterval = setInterval(()=>{ tooltipIdx = (tooltipIdx + 1 + Math.floor(Math.random()*3)) % reasons.length; noTooltip.textContent = reasons[tooltipIdx]; }, 1600);
-});
-noBtn.addEventListener('mouseleave', ()=>{ if(tooltipInterval) clearInterval(tooltipInterval); tooltipInterval=null; });
-
-/* ==========================
-   NO behaviors: escape + sounds + growth
-   ========================== */
-function randomNoPosition(){
-  const choices = [
-    {right:'6%', top:'12%'},{right:'6%', top:'82%'},{right:'82%', top:'12%'},{right:'82%', top:'82%'},
-    {right:'50%', top:'6%'},{right:'50%', top:'82%'},{right:'6%', top:'50%'},{right:'82%', top:'50%'}
-  ];
-  return choices[Math.floor(Math.random()*choices.length)];
-}
-function tryNoEscape(){
-  const pos = randomNoPosition();
-  noBtn.style.transition = 'top 340ms ease, right 340ms ease, transform 260ms ease';
-  for(const k in pos) noBtn.style[k] = pos[k];
-  showBurst();
-  yesScale += 0.055;
-  document.getElementById('yesBtn').style.transform = `scale(${yesScale})`;
-}
-function showBurst(){
-  const t = document.createElement('div');
-  t.textContent = '😿 💗';
-  t.style.position='fixed';
-  const r = noBtn.getBoundingClientRect();
-  t.style.left = (r.left + r.width/2) + 'px';
-  t.style.top = (r.top - 8) + 'px';
-  t.style.transform = 'translate(-50%,-50%)';
-  t.style.zIndex = 120;
-  document.body.appendChild(t);
-  t.animate([{transform:'translate(-50%,-50%) scale(.8)',opacity:0},{transform:'translate(-50%,-140%) scale(1)',opacity:1},{transform:'translate(-50%,-220%) scale(.6)',opacity:0}],{duration:900,easing:'ease-out'});
-  setTimeout(()=>t.remove(),1000);
+  if(confettiPieces.length > 0) requestAnimationFrame(confettiLoop);
+  else confettiRunning = false;
 }
 
-/* WebAudio for 'aww' and 'meow' */
-function ensureAudioCtx(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
-function playAww(){ ensureAudioCtx(); const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type='sine'; o.frequency.setValueAtTime(660,audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(160,audioCtx.currentTime+0.8); g.gain.setValueAtTime(0.0001,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.4,audioCtx.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.9); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.95); }
-function playMeow(){ ensureAudioCtx(); const o1=audioCtx.createOscillator(),o2=audioCtx.createOscillator(),g=audioCtx.createGain(); o1.type='sine'; o2.type='triangle'; o1.frequency.setValueAtTime(420,audioCtx.currentTime); o2.frequency.setValueAtTime(820,audioCtx.currentTime); o1.frequency.exponentialRampToValueAtTime(620,audioCtx.currentTime+0.25); o2.frequency.exponentialRampToValueAtTime(520,audioCtx.currentTime+0.25); g.gain.setValueAtTime(0.0001,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.25,audioCtx.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.9); o1.connect(g); o2.connect(g); g.connect(audioCtx.destination); o1.start(); o2.start(); o1.stop(audioCtx.currentTime+0.9); o2.stop(audioCtx.currentTime+0.9); }
+/* -------------------------
+   Background music control helpers
+   ------------------------- */
+function stopBgMusic(){
+  try{
+    // stop reliably by clearing src
+    if(bgIframe && bgIframe.src && bgIframe.src !== ''){
+      bgIframe.src = '';
+    }
+  }catch(e){}
+}
+function stopYesMusic(){
+  try{
+    if(yesIframe && yesIframe.src && yesIframe.src !== ''){
+      yesIframe.src = '';
+    }
+  }catch(e){}
+}
+function playYesMusic(videoId){
+  // ensure background music is stopped
+  stopBgMusic();
+  // set yes iframe
+  yesIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&iv_load_policy=3`;
+}
 
-noBtn.addEventListener('click', ()=>{ tryNoEscape(); playAww(); setTimeout(playMeow,140); });
+/* -------------------------
+   YES click: open modal, type letter, reveal gift, play YES song and confetti
+   ------------------------- */
+yesBtn.addEventListener('click', (e) => {
+  yesCount++;
+  yesCountEl.textContent = yesCount;
 
-/* ==========================
-   Confetti + hearts on YES
-   ========================== */
-const cConf = confettiCanvas;
-const cc2 = cConf.getContext('2d');
-function resizeConfetti(){ cConf.width = innerWidth; cConf.height = innerHeight; }
-resizeConfetti(); window.addEventListener('resize', resizeConfetti);
+  // stop background music first (clear src)
+  stopBgMusic();
 
-let confettiParticles = []; let confettiAnimating = false;
-function spawnConfetti(){
-  const count = 36 + Math.floor(Math.random()*28);
-  for(let i=0;i<count;i++){
-    confettiParticles.push({
-      x: Math.random()*cConf.width,
-      y: -20 - Math.random()*100,
-      vx: (Math.random()-0.5)*3,
-      vy: 2 + Math.random()*5,
-      rot: Math.random()*Math.PI*2,
-      vr: (Math.random()-0.5)*0.12,
-      size: 8 + Math.random()*14,
-      hue: 320 + Math.random()*40,
-      isHeart: Math.random() < 0.36
+  // set yes music src (replace YES_VIDEO_ID with your ID or pass as param)
+  playYesMusic('YES_VIDEO_ID'); // <-- REPLACE YES_VIDEO_ID with the YouTube video ID you want
+
+  // show modal
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+
+  // prepare letter + gift
+  letterText.textContent = '';
+  giftWrap.setAttribute('aria-hidden','true');
+  chocImg.classList.remove('revealed');
+  pandaImg.classList.remove('revealed');
+  openGift.disabled = false;
+  openGift.textContent = 'Open Gift 🍫';
+
+  // small pop on YES button
+  yesBtn.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:420});
+
+  // start confetti and type the letter
+  spawnConfetti(60);
+
+  setTimeout(()=> {
+    typeLetter(myLetter, letterText, () => {
+      giftWrap.setAttribute('aria-hidden','false');
+      openGift.focus();
     });
-  }
-}
-function runConfetti(){
-  if(confettiAnimating) return;
-  confettiAnimating = true;
-  spawnConfetti();
-  function tick(){
-    cc2.clearRect(0,0,cConf.width,cConf.height);
-    for(let i=confettiParticles.length-1;i>=0;i--){
-      const p = confettiParticles[i];
-      p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.rot += p.vr;
-      cc2.save(); cc2.translate(p.x,p.y); cc2.rotate(p.rot);
-      if(p.isHeart){
-        cc2.fillStyle = `hsl(${p.hue} 80% 70%)`;
-        cc2.beginPath();
-        const s = p.size/10;
-        cc2.moveTo(0,-5*s);
-        cc2.bezierCurveTo(-8*s,-18*s,-22*s,-6*s,-22*s,1*s);
-        cc2.bezierCurveTo(-22*s,14*s,-6*s,24*s,0,30*s);
-        cc2.bezierCurveTo(6*s,24*s,22*s,14*s,22*s,1*s);
-        cc2.bezierCurveTo(22*s,-6*s,8*s,-18*s,0,-5*s);
-        cc2.fill();
-      } else {
-        cc2.fillStyle = `hsl(${p.hue} 80% 65%)`;
-        cc2.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.7);
-      }
-      cc2.restore();
-      if(p.y > cConf.height + 140) confettiParticles.splice(i,1);
-    }
-    if(confettiParticles.length>0) requestAnimationFrame(tick);
-    else confettiAnimating = false;
-  }
-  requestAnimationFrame(tick);
-}
-
-/* ==========================
-   Typewriter + paper-open effect
-   ========================== */
-/* Typewriter: writes text into element char by char and returns a Promise */
-function typeWrite(elem, text, speed=28){
-  return new Promise((resolve)=>{
-    elem.textContent = '';
-    let i=0;
-    const cursor = document.createElement('span');
-    cursor.className='cursor-blink';
-    cursor.textContent='▌';
-    elem.parentNode.appendChild(cursor);
-    function step(){
-      if(i <= text.length){
-        elem.textContent = text.slice(0,i);
-        i++;
-        setTimeout(step, speed + Math.random()*18);
-      } else {
-        setTimeout(()=>{ cursor.remove(); resolve(); }, 700);
-      }
-    }
-    step();
-  });
-}
-
-/* Open modal: animate paper opening then type the letter; show GIF holders */
-async function openModal(){
-  modalBack.style.display = 'flex';
-  // floating emojis
-  for(let i=0;i<18;i++){
-    const span = document.createElement('div');
-    span.textContent = ['💗','💘','😍','💞'][Math.floor(Math.random()*4)];
-    span.style.position='absolute'; span.style.left=(10+Math.random()*80)+'%';
-    span.style.bottom='-24px'; span.style.fontSize=(12+Math.random()*18)+'px'; span.style.opacity=0;
-    loveStream.appendChild(span);
-    const dur = 3800 + Math.random()*2000;
-    span.animate([{transform:'translateY(0) scale(.85)',opacity:0},{transform:`translateY(-${200 + Math.random()*260}px) scale(1)`,opacity:1},{transform:`translateY(-${420 + Math.random()*280}px) scale(.7)`,opacity:0}],{duration:dur,easing:'cubic-bezier(.2,.8,.2,1)'});
-    setTimeout(()=>span.remove(),5200+Math.random()*1200);
-  }
-
-  // reveal mobile extras (we show for all sizes now)
-  mobileExtras.style.display = 'block';
-
-  // PAPER OPEN animation: add 'open' class -> CSS transitions handle 3D fold
-  paperEl.classList.remove('open');
-  // force reflow for consistent animation
-  void paperEl.offsetWidth;
-  // small delay so the open animation has a tiny pop
-  setTimeout(()=> paperEl.classList.add('open'), 60);
-
-  // the special letter text (edit as you wish)
-  const specialLetter = "My dearest —\n\nI choose you today and every day. I want to hold your hand through silly days and quiet nights. Thank you for the little joys, the laughter, and the warmth you bring. Will you be mine? 💌\n\n— Yours";
-  // wait a bit for the paper open to start then type
-  await new Promise(r => setTimeout(r, 360));
-  await typeWrite(letterText, specialLetter, 28);
-}
-
-/* ==========================
-   YES click: music switching + confetti + modal
-   ========================== */
-function ytEmbedUrl(id){ return `https://www.youtube.com/embed/${id}?autoplay=1&loop=1&playlist=${id}&controls=0&disablekb=1&modestbranding=1`; }
-function stopIframe(iframe){ try{ iframe.contentWindow.postMessage('{"event":"command","func":"stopVideo","args":""}','*'); }catch(e){} try{ iframe.src = ''; }catch(e){} }
-
-yesBtn.addEventListener('click', ()=>{
-  stopIframe(bgMusic); // stop initial
-  // start second
-  secondMusic.src = ytEmbedUrl(secondVideoId);
-  runConfetti();
-  openModal();
-  // after a short handoff, stop second and start third
-  setTimeout(()=>{ stopIframe(secondMusic); thirdMusic.src = ytEmbedUrl(thirdVideoId); }, 2200);
+  }, 360);
 });
 
-/* modal close */
-modalClose.addEventListener('click', ()=>{ modalBack.style.display='none'; loveStream.innerHTML=''; mobileExtras.style.display='none'; });
-modalBack.addEventListener('click', (e)=>{ if(e.target===modalBack){ modalBack.style.display='none'; loveStream.innerHTML=''; mobileExtras.style.display='none'; }});
+/* -------------------------
+   Open gift: reveal chocolate then panda dance
+   ------------------------- */
+openGift.addEventListener('click', () => {
+  chocImg.classList.add('revealed');
+  chocImg.animate([{transform:'translateY(0)'},{transform:'translateY(-8px)'},{transform:'translateY(0)'}],{duration:700,iterations:1,easing:'ease-out'});
+  openGift.disabled = true;
+  openGift.textContent = 'Opened 🍫';
 
-/* ==========================
-   Upload handlers for images/GIFs
-   ========================== */
-uploadYou.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; document.getElementById('imgYou').src = URL.createObjectURL(f); });
-uploadHer.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; document.getElementById('imgHer').src = URL.createObjectURL(f); });
-uploadChocoGif.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f); const img=document.createElement('img'); img.src=url; img.alt='Chocolate'; img.style.maxWidth='200px'; img.style.borderRadius='8px'; chocoInner.replaceWith(img); });
-uploadPandaGif.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f); const img=document.createElement('img'); img.src=url; img.alt='Panda'; img.style.maxWidth='200px'; img.style.borderRadius='8px'; pandaInner.replaceWith(img); });
+  // after a short delay reveal panda dance as extra surprise
+  setTimeout(()=>{
+    pandaImg.classList.add('revealed');
+    // small bounce
+    pandaImg.animate([{transform:'translateY(8px)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}],{duration:900,iterations:1,easing:'ease-out'});
+  }, 650);
+});
 
-/* ==========================
-   Chat widget (local)
-   ========================== */
-const chatToggle = document.getElementById('chatToggle');
-const chatPanel = document.getElementById('chatPanel');
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const chatSend = document.getElementById('chatSend');
+/* -------------------------
+   Download & Print
+   ------------------------- */
+downloadLetter.addEventListener('click', () => {
+  const filename = 'my_love_letter.txt';
+  const blob = new Blob([myLetter], {type: 'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
 
-chatToggle.addEventListener('click', ()=>{ chatPanel.style.display = chatPanel.style.display==='flex' ? 'none' : 'flex'; });
-chatSend.addEventListener('click', sendChat);
-(chatInput||{}).addEventListener && chatInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }});
-function sendChat(){ const v = chatInput.value.trim(); if(!v) return; appendChat('You',v); chatInput.value=''; setTimeout(()=>appendChat('Her', pickReply(v)), 800+Math.random()*900); }
-function appendChat(from,text){ const d=document.createElement('div'); d.style.padding='6px 8px'; d.style.borderRadius='8px'; d.style.marginBottom='6px'; d.style.background = from==='You' ? 'linear-gradient(90deg,#fff,#fff0f8)' : 'linear-gradient(90deg,#fff,#fff7ea)'; d.innerHTML = `<strong style="font-size:12px;color:#7a3b63">${from}</strong><div style="font-size:13px;color:#6b5160;margin-top:6px">${escapeHtml(text)}</div>`; chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight; }
-function pickReply(){ const r=["Aww that's sweet 💕","I love that 🥺","You made me blush 😳","Can we get chocolate after?","Yes, let's go on an adventure!"]; return r[Math.floor(Math.random()*r.length)]; }
-function escapeHtml(s){ return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+printLetter.addEventListener('click', () => {
+  const win = window.open('', '_blank', 'noopener');
+  if(!win) { alert('Popup blocked — please allow popups to print.'); return; }
+  const html = `
+    <html><head><title>My letter</title>
+    <style>body{font-family:Inter, Poppins, sans-serif;padding:28px;color:#3b2b3b} pre{white-space:pre-wrap;font-size:16px;line-height:1.45}</style>
+    </head><body><h2>My special letter</h2><pre>${escapeHtml(myLetter)}</pre></body></html>`;
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  setTimeout(()=>{ win.print(); }, 450);
+});
 
-/* ==========================
-   Small misc: placeholder photos and AudioContext resume
-   ========================== */
-document.getElementById('imgYou').src = document.getElementById('imgYou').src || 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='#fff7f9'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' fill='#a66' font-size='20'>You</text></svg>`);
-document.getElementById('imgHer').src = document.getElementById('imgHer').src || 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='#fff7f0'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' fill='#a66' font-size='20'>Her</text></svg>`);
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function resumeAudioOnGesture(){
-  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state === 'suspended') audioCtx.resume();
+/* -------------------------
+   Close modal
+   ------------------------- */
+closeModal.addEventListener('click', () => {
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  // stop yes music
+  stopYesMusic();
+  // optionally restart background music by setting bg src again (if you want background to resume, provide BG_VIDEO_ID)
+  // Example: bgIframe.src = 'https://www.youtube.com/embed/BG_VIDEO_ID?autoplay=1&mute=0&loop=1&playlist=BG_VIDEO_ID&controls=0';
+  // For now we leave it stopped to avoid autoplay issues.
+  // reset open gift button + visuals
+  openGift.disabled = false;
+  openGift.textContent = 'Open Gift 🍫';
+  chocImg.classList.remove('revealed');
+  pandaImg.classList.remove('revealed');
+});
+
+/* -------------------------
+   NO button playful behavior & counting
+   ------------------------- */
+noBtn.addEventListener('click', (e) => {
+  noCount++;
+  noCountEl.textContent = noCount;
+
+  // quick nudge + change text briefly
+  noBtn.classList.add('wiggle');
+  setTimeout(()=> noBtn.classList.remove('wiggle'), 820);
+  const r = randReason();
+  const old = noBtn.textContent;
+  noBtn.textContent = 'No 😿 — ' + r;
+  // restore label after 2.5s
+  setTimeout(()=>{ noBtn.innerHTML = 'NO 😿<div class="tooltip" id="noTooltip">Hover for a reason...</div>'; }, 2500);
+});
+
+/* -------------------------
+   Small accessibility: keyboard
+   ------------------------- */
+yesBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); yesBtn.click(); }});
+noBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); noBtn.click(); }});
+
+/* -------------------------
+   Attempt to unmute background after user gesture (optional)
+   ------------------------- */
+function tryUnmuteBackgroundOnGesture(){
+  if(!bgIframe) return;
+  try{
+    const src = bgIframe.src || '';
+    if(src.includes('mute=1')){
+      const newSrc = src.replace('mute=1','mute=0');
+      // if you want autoplay with sound, browser may block until user gesture; we attempt it after interaction
+      bgIframe.src = newSrc;
+    }
+  }catch(e){}
 }
-['pointerdown','keydown','touchstart','click'].forEach(ev => window.addEventListener(ev, resumeAudioOnGesture, {once:true}));
+document.addEventListener('pointerdown', function onFirst(){ tryUnmuteBackgroundOnGesture(); document.removeEventListener('pointerdown', onFirst); }, {passive:true});
 
-/* keyboard access */
-yesBtn.addEventListener('keyup', (e)=>{ if(e.key==='Enter') yesBtn.click(); });
-noBtn.addEventListener('keyup', (e)=>{ if(e.key==='Enter') noBtn.click(); });
+/* -------------------------
+   Helpful: stop any playing iframes when page unloads
+   ------------------------- */
+window.addEventListener('beforeunload', () => {
+  stopBgMusic();
+  stopYesMusic();
+});
 
-/* simple accessibility: close modal with Escape */
-window.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ if(modalBack.style.display==='flex'){ modalBack.style.display='none'; loveStream.innerHTML=''; mobileExtras.style.display='none'; } } });
-
+/* -------------------------
+   Notes for you:
+   1) Replace these placeholders:
+      - you.jpg, crush.jpg, chocolate.gif, panda.gif
+      - BG_VIDEO_ID  (background YouTube video id)
+      - YES_VIDEO_ID (Yes celebration YouTube video id)
+   2) If you want the background music to resume after closing the modal, uncomment and edit the line near closeModal where we mention bgIframe.src.
+   3) If you want to email results (counts) somewhere, that requires server-side code or an API endpoint — I can help add that next if you want.
+*/
 </script>
 </body>
 </html>
